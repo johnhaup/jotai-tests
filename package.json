@@ -1,0 +1,23 @@
+{
+  "name": "jotai-tests",
+  "version": "0.0.1",
+  "description": "Playground for testing jotai",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "keywords": [
+    "jotai"
+  ],
+  "author": "John Haupenthal",
+  "license": "ISC",
+  "dependencies": {
+    "jotai": "^2.4.1",
+    "react": "^18.2.0"
+  },
+  "devDependencies": {
+    "@testing-library/react-hooks": "^8.0.1",
+    "jest": "^29.6.4",
+    "react-test-renderer": "^18.2.0"
+  }
+}
