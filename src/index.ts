@@ -1,3 +1,1 @@
-import { atom } from "jotai";
-
-export const booleanAtom = atom(false);
+console.log("react-tests");
