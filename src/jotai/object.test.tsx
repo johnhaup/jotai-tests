@@ -65,7 +65,8 @@ describe("object test", () => {
     expect(renderCount).toBe(1);
   });
 
-  it("does not rerender when setting an object with equal key/value pairs and using selectAtom", () => {
+  // NOTE: WIHOUT useMemo, we get an infinite loop!
+  it("does not rerender when setting an object with equal key/value pairs and using selectAtom with useMemo", () => {
     let renderCount = 0;
 
     function useMemoizedObjectAtom() {
@@ -106,6 +107,57 @@ describe("object test", () => {
     });
     act(() => {
       set.current({ foo: "boo" });
+    });
+
+    expect(renderCount).toBe(2);
+  });
+
+  it("does not rerender when setting a nested object value with equal key/value pairs and using selectAtom with useMemo", () => {
+    let renderCount = 0;
+
+    const nestedAtomObject = atom({ foo: { bar: { hello: "bye" } } });
+    const { result: setNested } = renderHook(() =>
+      useSetAtom(nestedAtomObject)
+    );
+
+    function useMemoizedObjectAtom() {
+      const object = useAtomValue(
+        useMemo(
+          () =>
+            selectAtom(
+              nestedAtomObject,
+              (v) => v,
+              (a, b) => isEqual(a, b)
+            ),
+          []
+        )
+      );
+
+      return object;
+    }
+
+    function TextComponent() {
+      useEffect(() => {
+        renderCount++;
+      });
+
+      useMemoizedObjectAtom();
+
+      return <div>Deep Memo Test</div>;
+    }
+
+    render(<TextComponent />);
+
+    expect(renderCount).toBe(1);
+
+    act(() => {
+      setNested.current({ foo: { bar: { hello: "bye" } } });
+    });
+    act(() => {
+      setNested.current({ foo: { bar: { hello: "bye" } } });
+    });
+    act(() => {
+      setNested.current({ foo: { bar: { hello: "HI!" } } });
     });
 
     expect(renderCount).toBe(2);
