@@ -1,6 +1,6 @@
 import { Atom, useAtomValue } from "jotai";
 import { selectAtom } from "jotai/utils";
-import { isEqual } from "lodash";
+import isEqual from "lodash/isEqual";
 import { useMemo } from "react";
 
 export const useMemoizedAtomValue = <T>(atom: Atom<T>) => {
@@ -14,7 +14,7 @@ export const useMemoizedAtomValue = <T>(atom: Atom<T>) => {
           (v) => v,
           (a, b) => isEqual(a, b)
         ),
-      []
+      [atom]
     )
   );
 
