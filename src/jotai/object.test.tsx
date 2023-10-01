@@ -7,6 +7,7 @@ import { DEFAULT, objectAtom } from "./object";
 import { useDeepMemo } from "../hooks/useDeepMemo";
 import { selectAtom } from "jotai/utils";
 import { isEqual } from "lodash";
+import { useMemoizedAtomValue } from "../hooks/useMemoizedAtomValue";
 
 describe("object test", () => {
   const { result: set } = renderHook(() => useSetAtom(objectAtom));
@@ -115,23 +116,13 @@ describe("object test", () => {
   it("does not rerender when setting a nested object value with equal key/value pairs and using selectAtom with useMemo", () => {
     let renderCount = 0;
 
-    const nestedAtomObject = atom({ foo: { bar: { hello: "bye" } } });
+    const nestedAtomObject = atom<object>({ foo: { bar: { hello: "bye" } } });
     const { result: setNested } = renderHook(() =>
       useSetAtom(nestedAtomObject)
     );
 
     function useMemoizedObjectAtom() {
-      const object = useAtomValue(
-        useMemo(
-          () =>
-            selectAtom(
-              nestedAtomObject,
-              (v) => v,
-              (a, b) => isEqual(a, b)
-            ),
-          []
-        )
-      );
+      const object = useMemoizedAtomValue(nestedAtomObject);
 
       return object;
     }
@@ -159,8 +150,11 @@ describe("object test", () => {
     act(() => {
       setNested.current({ foo: { bar: { hello: "HI!" } } });
     });
+    act(() => {
+      setNested.current({ foo: { bar: { hello: "HI!", iamnew: "yes!" } } });
+    });
 
-    expect(renderCount).toBe(2);
+    expect(renderCount).toBe(3);
   });
 
   it("rerenders with useDeepMemo 😠 since useAtomValue is rerunning", () => {
