@@ -122,7 +122,9 @@ describe("object test", () => {
     );
 
     function useMemoizedObjectAtom() {
-      const object = useMemoizedAtomValue(nestedAtomObject);
+      const selector = useCallback((v) => v, []);
+
+      const object = useMemoizedAtomValue(nestedAtomObject, selector);
 
       return object;
     }
@@ -157,7 +159,7 @@ describe("object test", () => {
     expect(renderCount).toBe(3);
   });
 
-  it("does not rerender when setting a nested object value with equal key/value pairs and using selectAtom with useMemo and passing a selector", () => {
+  it("does not rerender when setting a nested object value with equal key/value pairs and using selectAtom with useMemo", () => {
     let renderCount = 0;
 
     const nestedAtomObject = atom<object>({ foo: { bar: { hello: "bye" } } });
@@ -178,6 +180,52 @@ describe("object test", () => {
           [nestedAtomObject]
         )
       );
+
+      return object;
+    }
+
+    function TextComponent() {
+      useEffect(() => {
+        renderCount++;
+      });
+
+      useMemoizedObjectAtom();
+
+      return <div>Deep Memo Test</div>;
+    }
+
+    render(<TextComponent />);
+
+    expect(renderCount).toBe(1);
+
+    act(() => {
+      setNested.current({ foo: { bar: { hello: "bye" } } });
+    });
+    act(() => {
+      setNested.current({ foo: { bar: { hello: "bye" } } });
+    });
+    act(() => {
+      setNested.current({ foo: { bar: { hello: "HI!" } } });
+    });
+    act(() => {
+      setNested.current({ foo: { bar: { hello: "HI!", iamnew: "yes!" } } });
+    });
+
+    expect(renderCount).toBe(3);
+  });
+
+  it("does not rerender when setting a nested object value with equal key/value pairs and using selectAtom with useMemoMemoizedAtomValue and passing a memoized selector", () => {
+    let renderCount = 0;
+
+    const nestedAtomObject = atom<object>({ foo: { bar: { hello: "bye" } } });
+    const { result: setNested } = renderHook(() =>
+      useSetAtom(nestedAtomObject)
+    );
+
+    function useMemoizedObjectAtom() {
+      const selector = useCallback((v) => v.foo.bar, []);
+
+      const object = useMemoizedAtomValue(nestedAtomObject, selector);
 
       return object;
     }
